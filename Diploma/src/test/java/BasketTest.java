@@ -16,7 +16,7 @@ import java.text.ParsePosition;
 
 
 
-public class BasketTestScenario {
+public class BasketTest {
     private WebDriver driver;
     private WebDriverWait wait;
 

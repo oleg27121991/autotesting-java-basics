@@ -12,7 +12,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.io.IOException;
 
-public class RegisterTestScenario extends Data {
+public class RegisterTest extends Data {
     private WebDriver driver;
     private WebDriverWait wait;
 

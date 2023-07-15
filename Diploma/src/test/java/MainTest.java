@@ -11,7 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.io.IOException;
 
-public class MainTestScenario {
+public class MainTest {
     private WebDriver driver;
     private WebDriverWait wait;
 
