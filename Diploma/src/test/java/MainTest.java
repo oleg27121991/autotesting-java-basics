@@ -40,7 +40,7 @@ public class MainTest {
     @After
     public void tearDown() throws IOException {
         var sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(sourceFile, new File("desktop\\screenshot"));
+        FileUtils.copyFile(sourceFile, new File("screenshots\\screenshot"));
         driver.quit();
     }
 
