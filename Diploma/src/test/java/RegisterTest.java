@@ -1,16 +1,17 @@
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestName;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RegisterTest extends Data {
     private WebDriver driver;
@@ -24,11 +25,21 @@ public class RegisterTest extends Data {
         driver.navigate().to("http://intershop5.skillbox.ru/");
     }
 
+    @Rule
+    public TestName testName = new TestName();
+
     @After
-    public void tearDown() throws IOException {
-        var sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(sourceFile, new File("desktop\\screenshot"));
-        driver.quit();
+    public void tearDown() {
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String methodName = testName.getMethodName();
+            String fileName = methodName + ".png";
+            FileHandler.copy(screenshot, new File("screenshots/" + fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();
+        }
     }
 
     public By loginButtonLocator = By.cssSelector(".account");
@@ -63,11 +74,11 @@ public class RegisterTest extends Data {
 
         // Ввести уникальное имя пользователя
         var usernameInput = driver.findElement(usernameInputLocator);
-        usernameInput.sendKeys(username);
+        usernameInput.sendKeys(regUsername);
 
         // Ввести допустимый электронный адрес
         var emailInput = driver.findElement(emailInputLocator);
-        emailInput.sendKeys(email);
+        emailInput.sendKeys(regEmail);
 
         // Ввести безопасный пароль
         var passwordInput = driver.findElement(passwordInputLocator);

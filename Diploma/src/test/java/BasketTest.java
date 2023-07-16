@@ -1,10 +1,9 @@
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestName;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -13,7 +12,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class BasketTest {
@@ -42,11 +42,21 @@ public class BasketTest {
         driver.navigate().to("http://intershop5.skillbox.ru/cart/");
     }
 
+    @Rule
+    public TestName testName = new TestName();
+
     @After
-    public void tearDown() throws IOException {
-        var sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(sourceFile, new File("desktop\\screenshot"));
-        driver.quit();
+    public void tearDown() {
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String methodName = testName.getMethodName();
+            String fileName = methodName + ".png";
+            FileHandler.copy(screenshot, new File("screenshots/" + fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();
+        }
     }
 
     @Test

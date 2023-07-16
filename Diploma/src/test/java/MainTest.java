@@ -1,15 +1,16 @@
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestName;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainTest {
     private WebDriver driver;
@@ -37,15 +38,25 @@ public class MainTest {
         driver.navigate().to("http://intershop5.skillbox.ru/");
     }
 
+    @Rule
+    public TestName testName = new TestName();
+
     @After
-    public void tearDown() throws IOException {
-        var sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(sourceFile, new File("screenshots\\screenshot"));
-        driver.quit();
+    public void tearDown() {
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String methodName = testName.getMethodName();
+            String fileName = methodName + ".png";
+            FileHandler.copy(screenshot, new File("screenshots/" + fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();
+        }
     }
 
     @Test
-    public void verifyMainPageTitleTest() {
+    public void testVerifyMainPageTitle() {
         driver.navigate().to("http://intershop5.skillbox.ru/");
         var actualMainTitle = driver.getTitle();
         var expectedMainTitle = "Skillbox — Интернет магазин";
@@ -53,14 +64,14 @@ public class MainTest {
     }
 
     @Test
-    public void verifyLogoDisplayedTest() {
+    public void testVerifyLogoDisplayed() {
         driver.navigate().refresh();
         var logo = driver.findElement(logoLocator);
         Assert.assertTrue("Логотип не отображается", logo.isDisplayed());
     }
 
     @Test
-    public void verifySearchFunctionality() {
+    public void testVerifySearchFunctionality() {
         driver.navigate().refresh();
         var searchTerm = "Телефон";
         driver.findElement(searchInputLocator).sendKeys(searchTerm);
@@ -72,7 +83,7 @@ public class MainTest {
     }
 
     @Test
-    public void verifyEmptySearchResults() {
+    public void testVerifyEmptySearchResults() {
         driver.navigate().refresh();
         driver.findElement(searchInputLocator).sendKeys(Keys.ENTER);
         var searchResults = driver.findElement(searchResultsLocator);
@@ -80,7 +91,7 @@ public class MainTest {
     }
 
     @Test
-    public void selectFirstItemFromSaleSection() {
+    public void testSelectFirstItemFromSaleSection() {
         driver.navigate().refresh();
         var saleSection = driver.findElement(saleSectionLocator);
         var items = saleSection.findElements(activeSlideLocator);
@@ -96,7 +107,7 @@ public class MainTest {
     }
 
     @Test
-    public void verifyRegisterNavigationLinkWork() {
+    public void testVerifyRegisterNavigationLinkWork() {
         driver.navigate().refresh();
         driver.findElement(myAccountLinkLocator).click();
         var expectedTitle = "Мой аккаунт — Skillbox";
@@ -107,7 +118,7 @@ public class MainTest {
     }
 
     @Test
-    public void verifyCategoryFirstPromoPageNavigation() {
+    public void testVerifyCategoryFirstPromoPageNavigation() {
         driver.navigate().refresh();
         var firstCategoryElement = driver.findElement(firstCategoryElementLocator);
         var titleFirstCategoryElement = driver.findElement(titleFirstCategoryElementLocator);
@@ -122,7 +133,7 @@ public class MainTest {
     }
 
     @Test
-    public void verifyCategorySecondPromoPageNavigation() {
+    public void testVerifyCategorySecondPromoPageNavigation() {
         driver.navigate().refresh();
         var firstCategoryElement = driver.findElement(secondCategoryElementLocator);
         var titleFirstCategoryElement = driver.findElement(titleSecondCategoryElementLocator);
@@ -137,10 +148,13 @@ public class MainTest {
     }
 
     @Test
-    public void selectFirstItemNewSaleSection() {
+    public void testSelectFirstItemNewSaleSection() {
         driver.navigate().refresh();
         var saleSection = driver.findElement(newSaleSectionLocator);
         var items = saleSection.findElements(activeSlideLocator);
+
+        // Скролл к секции "Новые поступления"
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", saleSection);
         Assert.assertTrue("Блок Новые поступления не содержит элементов", items.size() > 0);
         var firstItem = items.get(0);
         var titleElement = firstItem.findElement(titleElementLocator);

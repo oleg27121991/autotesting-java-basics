@@ -1,18 +1,19 @@
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestName;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class CatalogTest {
@@ -37,11 +38,21 @@ public class CatalogTest {
         driver.navigate().to("http://intershop5.skillbox.ru/product-category/catalog/");
     }
 
+    @Rule
+    public TestName testName = new TestName();
+
     @After
-    public void tearDown() throws IOException {
-        var sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(sourceFile, new File("desktop\\screenshot"));
-        driver.quit();
+    public void tearDown() {
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String methodName = testName.getMethodName();
+            String fileName = methodName + ".png";
+            FileHandler.copy(screenshot, new File("screenshots/" + fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();
+        }
     }
 
     // Метод для проверки порядка товаров по цене
@@ -121,24 +132,29 @@ public class CatalogTest {
     @Test
     public void testProductDetailsPage() {
         driver.navigate().refresh();
-        var productElement = driver.findElement(productLocator);
+        var addToCartButton = driver.findElement(By.cssSelector(".add_to_cart_button"));
+
+        // Получение информации о товаре из карточки
+        var productElement = addToCartButton.findElement(By.xpath("./ancestor::li[contains(@class, 'product')]"));
         var productNameElement = productElement.findElement(productNameLocator);
         var selectedProductName = productNameElement.getText();
-        var selectedProductPriceElement = productElement.findElement(productPriceLocator);
-        var selectedProductPrice = selectedProductPriceElement.getText();
-        productElement.click();
+        var productPriceElement = productElement.findElement(productPriceLocator);
+        var selectedProductPrice = productPriceElement.getText();
+        productNameElement.click();
+
 
         // Проверка информации о товаре на странице деталей
+        wait.until(ExpectedConditions.visibilityOfElementLocated(pageTitleLocator));
         var pageTitleElement = driver.findElement(pageTitleLocator);
         String pageTitle = pageTitleElement.getText();
         String expectedTitle = selectedProductName;
         Assert.assertEquals("Заголовок страницы не соответствует ожидаемому", expectedTitle, pageTitle);
 
-        productNameElement = driver.findElement(pageTitleLocator);
-        var productPriceElement = driver.findElement(productPriceLocator);
+        var productNameElementDetailsPage = driver.findElement(By.cssSelector(".product_title"));
+        var productPriceElementDetailsPage = driver.findElement(productPriceLocator);
 
-        var productName = productNameElement.getText();
-        var productPrice = productPriceElement.getText();
+        var productName = productNameElementDetailsPage.getText();
+        var productPrice = productPriceElementDetailsPage.getText();
 
         Assert.assertEquals("Название товара на странице деталей не соответствует выбранному товару", selectedProductName, productName);
         Assert.assertEquals("Цена товара на странице деталей не соответствует выбранному товару", selectedProductPrice, productPrice);
